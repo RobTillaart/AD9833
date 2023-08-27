@@ -11,7 +11,7 @@
 
 # AD9833
 
-Arduino library for AD9855 function generator. 
+Arduino library for AD9833 function generator. 
 
 
 ## Description
