@@ -11,7 +11,7 @@
 #include "SPI.h"
 
 
-#define AD933_LIB_VERSION     (F("0.1.0"))
+#define AD9833_LIB_VERSION     (F("0.1.0"))
 
 
 #define AD9833_MAX_FREQ       (12500000UL)  //  12.5 MHz.
