@@ -33,8 +33,8 @@ The library also can set the phase of each wave from 0° to 360°.
 The step size for phase is ~0.1°.
 
 |   type   |  freq max  |  freq step  |  phase   | phase step  |
-|:---------|-----------:|-------------|---------:|------------:|
-|  AD9833  |  12.5 MHz  |  0.1 Hz     |  0..360  |  0.1°       |
+|:--------:|:----------:|:-----------:|:--------:|:-----------:|
+|  AD9833  |  12.5 MHz  |  0.1 Hz     |  0..360  |     0.1°    |
 
 
 #### Related
@@ -45,7 +45,7 @@ The step size for phase is ~0.1°.
 
 ## Connection
 
-Schema Chip, breakout will have different pins.
+Schema AD9833 chip, breakout will have different pins.
 
 ```
                   TOP VIEW
@@ -103,7 +103,7 @@ For hardware SPI only, to select a specific hardware SPI port e.g. SPI2.
 |  No output  |  AD9833_OFF       |    0    |
 |  Sine       |  AD9833_SINE      |    1    |
 |  Square     |  AD9833_SQUARE1   |    2    |
-|  Square 2   |  AD9833_SQUARE2   |    3    |  half frequency
+|  Square2    |  AD9833_SQUARE2   |    3    |  half frequency
 |  Triangle   |  AD9833_TRIANGLE  |    4    |
 
 
@@ -126,7 +126,7 @@ Default channel is 0, which makes the function calls simpler
 when only using one channel.
 
 - **float setPhase(float phase, uint8_t channel = 0)**
-setPhase sets the phase and is limited to 0° - 360°
+setPhase sets the phase and is limited to 0° - 360°.
 Returns the phase set.
 - **float getPhase(uint8_t channel = 0)** returns the phase set.
 - **float getMaxPhase()** returns the maximum phase to set (convenience).
@@ -174,7 +174,6 @@ void setup()
 
 - test with hardware
 - update documentation
-- unit tests
 
 
 #### Should
@@ -188,6 +187,7 @@ void setup()
 
 #### Could
 
+- extend unit tests
 - move code to .cpp
 - solve MAGIC numbers (defaults)
 - setting half freq register for performance mode.
