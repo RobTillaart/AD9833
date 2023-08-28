@@ -88,9 +88,26 @@ Read datasheet for detailed description of the pins.
 For hardware SPI only use the first two parameters, 
 for SW SPI you need to define the data and clock pin too.
   - selectPin = chip select.
+If the selectPin is set to 255, external FSYNC is used. 
+See section below
 - **void begin(uint8_t selectPin, SPIClass \* spi)**
 For hardware SPI only, to select a specific hardware SPI port e.g. SPI2.
-- **void reset()** resets the function generator.
+If the selectPin is set to 255, external FSYNC is used. 
+See section below
+- **void reset()** resets the function generator to 1000 Hz, 
+phase 0, wave off.
+- **void hardwareReset()** resets all registers to 0.
+- **bool setPowerMode(uint8_t mode = 0)** set the powerMode.
+Use ```setPowerMode(0)``` to wake all up.
+Returns false if mode is out of range.
+Details see datasheet.
+
+|  powerMode  |  meaning                      |
+|:-----------:|:------------------------------|
+|     0       |  no power saving              |
+|     1       |  powers down the on-chip DAC  |
+|     2       |  disable internal MCLK clock  |
+|     3       |  combination of mode 1 & 2    |
 
 
 #### Wave
@@ -168,6 +185,33 @@ void setup()
 ```
 
 
+## External FSYNC
+
+Experimental => use with care!
+
+If in the **begin()** function the selectPin is set to 255 external FSYNC is used. 
+This allows to control e.g many AD9833 devices in parallel, with multi-IO chips.
+Think of the SPI based **MCP23S08/17**, or the I2C based **PCF8574/75**.
+
+The advantage is that one can control many (e.g. 16 devices) with a minimum of IO lines.
+
+The disadvantage is that you need to add extra code lines to set / clear the FSYNC line(s).
+Furthermore one should know that using this "external FSYNC" is slower than direct control 
+with MCU pins from within the library.
+
+Pin count wise this concept is only interesting for 3 or more AD9833 devices.
+
+Code wise you need to "manual" control the FSYNC.
+
+```cpp
+  setFsyncLow(5);        //  select device 5
+  AD.setFrequency(440);  //  set a new frequency
+  setFsyncHigh(5);       //  update the setting.
+```
+
+As this implementation is experimental, the interface might change in the future.
+
+
 ## Future
 
 #### Must
@@ -178,11 +222,11 @@ void setup()
 
 #### Should
 
-- examples 
+- examples
   - for ESP32 HWSPI interface
   - use of channels (freq & phase)
 - do tests on ESP32
-- performance measurements
+- investigate compatibility AD9834
 
 
 #### Could
@@ -191,8 +235,7 @@ void setup()
 - move code to .cpp
 - solve MAGIC numbers (defaults)
 - setting half freq register for performance mode.
-- investigate different power down / sleep modi (page 16)
-- investigate hardware reset (page 16)
+- performance measurements
 
 
 #### Wont

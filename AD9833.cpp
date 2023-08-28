@@ -2,7 +2,7 @@
 //    FILE: AD9833.cpp
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for AD9833 function generator
-// VERSION: 0.1.0
+// VERSION: 0.1.1
 //     URL: https://github.com/RobTillaart/AD9833
 //
 
@@ -32,8 +32,12 @@ void AD9833::begin(uint8_t selectPin, uint8_t dataPin, uint8_t clockPin)
   _dataPin   = dataPin;
   _clockPin  = clockPin;
 
-  pinMode(_selectPin, OUTPUT);
-  digitalWrite(_selectPin, HIGH);
+  _useSelect = (_selectPin != 255);
+  if (_useSelect)
+  {
+    pinMode(_selectPin, OUTPUT);
+    digitalWrite(_selectPin, HIGH);
+  }
 
   _hwSPI = ((dataPin == 0) || (clockPin == 0));
 
@@ -74,8 +78,12 @@ void AD9833::begin(uint8_t selectPin, uint8_t dataPin, uint8_t clockPin)
 void AD9833::begin(uint8_t selectPin, SPIClass * spi)
 {
   _selectPin = selectPin;
-  pinMode(_selectPin, OUTPUT);
-  digitalWrite(_selectPin, HIGH);
+  _useSelect = (_selectPin != 255);
+  if (_useSelect)
+  {
+    pinMode(_selectPin, OUTPUT);
+    digitalWrite(_selectPin, HIGH);
+  }
 
   _hwSPI = true;
   _spi_settings = SPISettings(8000000, MSBFIRST, SPI_MODE2);
@@ -95,6 +103,27 @@ void AD9833::reset()
   setFrequency(1000, 1);
   setPhase(0, 0);
   setPhase(0, 1);
+}
+
+
+void AD9833::hardwareReset()
+{
+  writeControlRegister(_control | 0x0100);
+  //  reset all library variables to be in "sync" with hardware.
+  _control  = 0;
+  _waveType = AD9833_OFF;
+  _freq[0]  = _freq[1]  = 0;
+  _phase[0] = _phase[1] = 0;
+}
+
+
+bool AD9833::setPowerMode(uint8_t mode)
+{
+  if (mode > 3) return false;
+  _control &= 0xFF3F;       //  clear previous power flags
+  _control |= (mode << 6);  //  set the new power flags
+  writeControlRegister(_control);
+  return true;
 }
 
 
@@ -275,7 +304,7 @@ void AD9833::writePhaseRegister(uint8_t reg, uint16_t value)
 
 void AD9833::writeData(uint16_t data)
 {
-  digitalWrite(_selectPin, LOW);
+  if (_useSelect) digitalWrite(_selectPin, LOW);
   if (_hwSPI)
   {
     mySPI->beginTransaction(_spi_settings);
@@ -296,7 +325,7 @@ void AD9833::writeData(uint16_t data)
     }
     digitalWrite(dao, LOW);
   }
-  digitalWrite(_selectPin, HIGH);
+  if (_useSelect) digitalWrite(_selectPin, HIGH);
 }
 
 

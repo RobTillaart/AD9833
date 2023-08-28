@@ -3,7 +3,7 @@
 //    FILE: AD9833.h
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for AD9833 function generator.
-// VERSION: 0.1.0
+// VERSION: 0.1.1
 //     URL: https://github.com/RobTillaart/AD9833
 
 
@@ -11,7 +11,7 @@
 #include "SPI.h"
 
 
-#define AD9833_LIB_VERSION     (F("0.1.0"))
+#define AD9833_LIB_VERSION     (F("0.1.1"))
 
 
 #define AD9833_MAX_FREQ       (12500000UL)  //  12.5 MHz.
@@ -31,11 +31,16 @@ class AD9833
 public:
   AD9833();
 
-  //  selectPin == fsyncPin
+  //       selectPin == fsyncPin
   void     begin(uint8_t selectPin, uint8_t dataPin = 0, uint8_t clockPin = 0);
   void     begin(uint8_t selectPin, SPIClass * spi);
 
   void     reset();
+  void     hardwareReset();
+  //       mode = 0..3 (datasheet)
+  bool     setPowerMode(uint8_t mode = 0);
+
+
 
   void     setWave(uint8_t wave = AD9833_OFF);
   uint8_t  getWave();
@@ -94,15 +99,15 @@ private:
   uint8_t  _dataPin   = 0;
   uint8_t  _clockPin  = 0;
   uint8_t  _selectPin = 0;
+  bool     _useSelect = false;
 
 
   //  SIGNAL
   uint16_t _control   = 0;
   uint8_t  _waveType  = AD9833_OFF;
 
-
-  float    _freq[2]   = { 1000, 1000 };  //  Hz
-  float    _phase[2]  = { 0, 0 };        //  angle
+  float    _freq[2]   = { 0, 0 };  //  Hz
+  float    _phase[2]  = { 0, 0 };  //  angle 0..360
 };
 
 
