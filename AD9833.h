@@ -42,7 +42,7 @@ public:
 
 
 
-  void     setWave(uint8_t wave = AD9833_OFF);
+  void     setWave(uint8_t waveform = AD9833_OFF);
   uint8_t  getWave();
 
 
@@ -104,7 +104,7 @@ private:
 
   //  SIGNAL
   uint16_t _control   = 0;
-  uint8_t  _waveType  = AD9833_OFF;
+  uint8_t  _waveform  = AD9833_OFF;
 
   float    _freq[2]   = { 0, 0 };  //  Hz
   float    _phase[2]  = { 0, 0 };  //  angle 0..360

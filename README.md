@@ -16,7 +16,7 @@ Arduino library for AD9833 function generator.
 
 ## Description
 
-Experimental library for the AD9833 function generator.
+Experimental library for the AD9833 function (waveform) generator.
 The library supports both hardware SPI and software SPI.
 
 TODO: test with hardware.
@@ -25,22 +25,45 @@ The AD9833 is a signal generator that has two channels for frequency and
 two channels for the phase. These channels can be set separately to give
 maximum flexibility.
 
-The AD9833 can generate three types of wave: sine, square (2x) and triangle.
+The AD9833 can generate three waveforms: sine, square (2x) and triangle.
 The frequency of the waves cover a range from 0 to 12.5 MHz.
 The step size for frequency is ~0.1 Hz (using 25 MHz reference clock).
 
 The library also can set the phase of each wave from 0° to 360°.
 The step size for phase is ~0.1°.
 
-|   type   |  freq max  |  freq step  |  phase   | phase step  |
-|:--------:|:----------:|:-----------:|:--------:|:-----------:|
+|   type   |  freq max  |  freq step  |  phase   | phase step  |  Notes  |
+|:--------:|:----------:|:-----------:|:--------:|:-----------:|:--------|
 |  AD9833  |  12.5 MHz  |  0.1 Hz     |  0..360  |     0.1°    |
+
+Note: With an external 1 MHz clock smaller frequency steps 0.004 Hz. can be made.
+This is not tested yet.
+
+
+#### Compatibles
+
+List of (partially) compatibles in the series, that might work (partially) with this library.
+
+TODO: Investigations needed, verify table below.
+
+|   type   |  freq max  |  freq step  |  wave forms  |  Notes  |
+|:--------:|:----------:|:-----------:|:------------:|:--------|
+|  AD9832  |  12.5 MHz  |             |  SI          |
+|  AD9833  |  12.5 MHz  |   0.1  Hz   |  SI  TR  SQ  |  for reference
+|  AD9834  |  37.5 MHz  |   0.28 Hz   |  SI  TR      |  has extra HW lines.
+|  AD9835  |  50.0 MHz  |   0.01 Hz   |      ??      |  looks not compatible
+|  AD9837  |  16.0 MHz  |   0.06 Hz   |  SI  TR  SQ  |
+|  AD9837  |   8.0 MHz  |   0.06 Hz   |  SI  TR      |
+
+If you have experience with one of the above "compatibles" and this library, 
+please let me know by opening an issue. 
+Probably they need a dedicated library based on this one.
 
 
 #### Related
 
 - https://github.com/RobTillaart/AD985X
-- https://github.com/RobTillaart/functionGenerator
+- https://github.com/RobTillaart/functionGenerator  software waveform generator
 
 
 ## Connection
@@ -98,7 +121,7 @@ See section below
 phase 0, wave off.
 - **void hardwareReset()** resets all registers to 0.
 - **bool setPowerMode(uint8_t mode = 0)** set the powerMode.
-Use ```setPowerMode(0)``` to wake all up.
+Default is 0, wake up. So use ```setPowerMode(0)``` to wake up the device.
 Returns false if mode is out of range.
 Details see datasheet.
 
@@ -110,12 +133,12 @@ Details see datasheet.
 |     3       |  combination of mode 1 & 2    |
 
 
-#### Wave
+#### Waveform
 
-- **void setWave(uint8_t wave)**
+- **void setWave(uint8_t waveform)**
 - **uint8_t getWave()**
 
-|  wave type  |  define name      |  value  |  notes  |
+|  waveform   |  define name      |  value  |  notes  |
 |:-----------:|:-----------------:|:-------:|:--------|
 |  No output  |  AD9833_OFF       |    0    |
 |  Sine       |  AD9833_SINE      |    1    |
@@ -226,8 +249,7 @@ As this implementation is experimental, the interface might change in the future
   - for ESP32 HWSPI interface
   - use of channels (freq & phase)
 - do tests on ESP32
-- investigate compatibility AD9834
-
+- investigate HLB mode versus B28 mode
 
 #### Could
 
@@ -235,8 +257,9 @@ As this implementation is experimental, the interface might change in the future
 - move code to .cpp
 - solve MAGIC numbers (defaults)
 - setting half freq register for performance mode.
-- performance measurements
-
+  - HLB mode
+- extend performance measurements
+- investigate compatibility AD9834 a.o.
 
 #### Wont
 

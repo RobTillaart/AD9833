@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - add **setPowerMode(uint8_t mode)**  //  0..3
 - add **void hardwareReset()**
 - update readme.md
--
+- minor edits
 
 
 ## [0.1.0] - 2023-08-25

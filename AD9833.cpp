@@ -98,6 +98,9 @@ void AD9833::begin(uint8_t selectPin, SPIClass * spi)
 
 void AD9833::reset()
 {
+  _control |= AD9833_B28;
+  writeControlRegister(_control);
+
   setWave(AD9833_OFF);
   setFrequency(1000, 0);
   setFrequency(1000, 1);
@@ -111,7 +114,7 @@ void AD9833::hardwareReset()
   writeControlRegister(_control | 0x0100);
   //  reset all library variables to be in "sync" with hardware.
   _control  = 0;
-  _waveType = AD9833_OFF;
+  _waveform = AD9833_OFF;
   _freq[0]  = _freq[1]  = 0;
   _phase[0] = _phase[1] = 0;
 }
@@ -127,18 +130,18 @@ bool AD9833::setPowerMode(uint8_t mode)
 }
 
 
-void AD9833::setWave(uint8_t waveType)
+void AD9833::setWave(uint8_t waveform)
 {
-  if (waveType > 4) return;
+  if (waveform > 4) return;
 
-  //  store wave type
-  _waveType = waveType;
+  //  store waveform
+  _waveform = waveform;
 
   //  clear bits in control register
   _control &= ~(AD9833_SLEEP1 | AD9833_SLEEP12 | AD9833_OPBITEN | AD9833_MODE);
 
   //  set bits in control register
-  switch(_waveType)
+  switch(_waveform)
   {
     case AD9833_OFF:
       _control |= (AD9833_SLEEP1 | AD9833_SLEEP12);
@@ -162,7 +165,7 @@ void AD9833::setWave(uint8_t waveType)
 
 uint8_t AD9833::getWave()
 {
-  return _waveType;
+  return _waveform;
 }
 
 
@@ -178,8 +181,6 @@ float AD9833::setFrequency(float freq, uint8_t channel)
   //  rounding
   uint32_t fr = (_freq[channel] * (268435456.0 / 25000000.0) + 0.5);
 
-  _control |= AD9833_B28;
-  writeControlRegister(_control);
   writeFreqRegister(channel, fr);
 
   return _freq[channel];
