@@ -78,11 +78,15 @@ public:
   void     setGPIOpins(uint8_t clk, uint8_t miso, uint8_t mosi, uint8_t select);
   #endif
 
-private:
 
+  //  LOW LEVEL API - Expert users only
   void     writeControlRegister(uint16_t value);
   void     writeFreqRegister(uint8_t reg, uint32_t freq);
   void     writePhaseRegister(uint8_t reg, uint16_t value);
+
+
+private:
+
   void     writeData(uint16_t data);
 
   bool     _hwSPI    = true;

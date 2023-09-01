@@ -40,7 +40,7 @@ Note: With an external 1 MHz clock smaller frequency steps 0.004 Hz. can be made
 This is not tested yet.
 
 
-#### Compatibles
+#### Compatibles ??
 
 List of (partially) compatibles in the series, that might work (partially) with this library.
 
@@ -117,8 +117,8 @@ See section below
 For hardware SPI only, to select a specific hardware SPI port e.g. SPI2.
 If the selectPin is set to 255, external FSYNC is used. 
 See section below
-- **void reset()** resets the function generator to 1000 Hz, 
-phase 0, wave off.
+- **void reset()** does a **hardwareReset()**, 
+and sets the control register to B28 for the **setFrequency()**
 - **void hardwareReset()** resets all registers to 0.
 - **bool setPowerMode(uint8_t mode = 0)** set the powerMode.
 Default is 0, wake up. So use ```setPowerMode(0)``` to wake up the device.
@@ -158,6 +158,9 @@ Returns the frequency set.
 - **float getFrequency(uint8_t channel = 0)** returns the frequency set.
 - **float getMaxFrequency()** returns the maximum frequency to set (convenience).
 - **void selectFreqChannel(uint8_t channel)** select the active frequency channel (0 or 1).
+
+Note: the frequency depends on the internal reference clock which is default 25 MHz.
+The library does not support other reference clocks yet.
 
 
 #### Phase
@@ -207,6 +210,20 @@ void setup()
 }
 ```
 
+#### Low level API
+
+Use at your own risk, please read the datasheet carefully.
+
+Since version 0.1.1 writing to the registers is made public.
+By using the low level API to access the registers directly, one has maximum
+control over the AD9833 device.
+Especially frequency setting is improved as the float **setFrequency()** does 
+not have the 28 bits precision of the register.
+
+- **void writeControlRegister(uint16_t value)** see datasheet
+- **void writeFreqRegister(uint8_t reg, uint32_t freq)** reg = 0 or 1, freq = 0 .. 134217728
+- **void writePhaseRegister(uint8_t reg, uint16_t value)** reg = 0 or 1, freq = 0 .. 4095
+  
 
 ## External FSYNC
 
@@ -245,15 +262,21 @@ As this implementation is experimental, the interface might change in the future
 
 #### Should
 
-- examples
-  - for ESP32 HWSPI interface
-  - use of channels (freq & phase)
-- do tests on ESP32
 - investigate HLB mode versus B28 mode
+- investigate external clock
+- investigate timing (response time)
+  - change freq
+  - change channels etc
+- test on ESP32 (3V3)
+
 
 #### Could
 
 - extend unit tests
+- add examples
+  - for ESP32 HWSPI interface
+  - use of channels (freq & phase)
+  - multi device example (array?)
 - move code to .cpp
 - solve MAGIC numbers (defaults)
 - setting half freq register for performance mode.

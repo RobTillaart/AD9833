@@ -69,7 +69,7 @@ void AD9833::begin(uint8_t selectPin, uint8_t dataPin, uint8_t clockPin)
     pinMode(_dataPin,  OUTPUT);
     pinMode(_clockPin, OUTPUT);
     digitalWrite(_dataPin,  LOW);
-    digitalWrite(_clockPin, LOW);
+    digitalWrite(_clockPin, HIGH);
   }
   reset();
 }
@@ -98,14 +98,9 @@ void AD9833::begin(uint8_t selectPin, SPIClass * spi)
 
 void AD9833::reset()
 {
-  _control |= AD9833_B28;
+  hardwareReset();
+  _control = AD9833_B28;
   writeControlRegister(_control);
-
-  setWave(AD9833_OFF);
-  setFrequency(1000, 0);
-  setFrequency(1000, 1);
-  setPhase(0, 0);
-  setPhase(0, 1);
 }
 
 
@@ -179,7 +174,7 @@ float AD9833::setFrequency(float freq, uint8_t channel)
   //  convert to bit pattern
   //  fr = round(freq * pow(2, 28) / 25 MHz));
   //  rounding
-  uint32_t fr = (_freq[channel] * (268435456.0 / 25000000.0) + 0.5);
+  uint32_t fr = round(_freq[channel] * (268435456.0 / 25000000.0));
 
   writeFreqRegister(channel, fr);
 
@@ -283,10 +278,11 @@ void AD9833::writeFreqRegister(uint8_t reg, uint32_t freq)
   if (reg == 1) data = 0x8000;  //  bit 15 and 14    10
 
   //  28 bits in two sets of 14
-  data |= (freq & 0x3FFF);
+  data |= (freq & 0x3FFF);  //  least significant 14 bits
   writeData(data);
-  data &= 0xC000;
-  data |= (freq >> 14);
+
+  data &= 0xC000;           //  remove freq data LSB
+  data |= (freq >> 14);     //  most significant  14 bits
   writeData(data);
 }
 
@@ -320,7 +316,7 @@ void AD9833::writeData(uint16_t data)
     //  MSBFIRST
     for (uint16_t mask = 0x8000; mask; mask >>= 1)
     {
-      digitalWrite(dao, (data & mask));
+      digitalWrite(dao, (data & mask) !=0 ? HIGH : LOW);
       digitalWrite(clk, LOW);
       digitalWrite(clk, HIGH);
     }
