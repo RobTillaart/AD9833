@@ -256,7 +256,6 @@ As this implementation is experimental, the interface might change in the future
 
 #### Must
 
-- test with hardware
 - update documentation
 
 
