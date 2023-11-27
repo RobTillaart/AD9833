@@ -16,7 +16,7 @@ Arduino library for AD9833 function generator.
 
 ## Description
 
-Experimental library for the AD9833 function (waveform) generator.
+Experimental library for the AD9833 function (waveform) generator (12.5 MHz)
 The library supports both hardware SPI and software SPI.
 
 The AD9833 is a signal generator that has two channels for frequency and
@@ -56,6 +56,18 @@ TODO: Investigations needed, verify table below (hardware needed).
 If you have experience with one of the above "compatibles" and this library, 
 please let me know by opening an issue. 
 Probably they need a dedicated library based on this one.
+
+
+#### 0.2.0 breaking change
+
+The version 0.2.0 has breaking changes in the interface. 
+The essence is removal of ESP32 specific code from the library. 
+This makes it possible to support the ESP32-S3 and other processors in the future. 
+Also it makes the library a bit simpler to maintain.
+
+Note: the parameters for pins have moved to the constructor.  
+Note: the order of the parameters of the software SPI constructor has changed in 0.2.0.
+
 
 
 #### Related
@@ -105,17 +117,15 @@ Read datasheet for detailed description of the pins.
 
 #### Constructor
 
-- **AD9833()** 12.5 MHz signal generator
-- **void begin(uint8_t selectPin, uint8_t dataPin = 0, uint8_t clockPin = 0)**
-For hardware SPI only use the first two parameters, 
-for SW SPI you need to define the data and clock pin too.
+for SW SPI you need to define the data and clock pin.
   - selectPin = chip select.
 If the selectPin is set to 255, external FSYNC is used. 
 See section below.
-- **void begin(uint8_t selectPin, SPIClass \* spi)**
-For hardware SPI only, to select a specific hardware SPI port e.g. SPI2.
-If the selectPin is set to 255, external FSYNC is used. 
-See section below.
+
+- **AD9833(uint8_t selectPin, SPIClassRP2040 \* mySPI = &SPI)** Constructor HW SPI.
+- **AD9833(uint8_t selectPin,SPIClass \* mySPI = &SPI )** Constructor HW SPI
+- **AD9833(uint8_t selectPin, uint8_t dataPin, uint8_t clockPin)** Constructor SW SPI.
+- **void begin()** initializes SPI + internals.
 - **void reset()** does a **hardwareReset()**, 
 and sets the control register to B28 for the **setFrequency()**
 - **void hardwareReset()** resets all registers to 0.
@@ -185,31 +195,6 @@ To be used only if one needs a specific speed.
 - **uint32_t getSPIspeed()** returns SPI transfer rate.
 - **bool usesHWSPI()** returns true if HW SPI is used.
 
-
-#### ESP32 specific
-
-- **void selectHSPI()** in case hardware SPI, the ESP32 has two options HSPI and VSPI.
-- **void selectVSPI()** see above.
-- **bool usesHSPI()** returns true if HSPI is used.
-- **bool usesVSPI()** returns true if VSPI is used.
-
-The **selectVSPI()** or the **selectHSPI()** needs to be called 
-BEFORE the **begin()** function.
-
-- **void setGPIOpins(uint8_t clk, uint8_t miso, uint8_t mosi, uint8_t select)**
-to overrule ESP32 default hardware pins (to be tested).
-Needs to be called AFTER the **begin()** function.
-
-In code, something like this (TODO write example)
-```cpp
-void setup()
-{
-  freqGen.selectVSPI();
-  freqGen.begin(15);
-  freqGen.setGPIOpins(CLK, MISO, MOSI, SELECT);  // SELECT should match the parameter of begin()
-  ...
-}
-```
 
 #### Low level API
 
