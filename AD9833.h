@@ -88,7 +88,7 @@ private:
   uint32_t _SPIspeed = 8000000;
 
   __SPI_CLASS__ * _mySPI;
-  SPISettings   _spi_settings;
+  SPISettings     _spi_settings;
 
   //  PINS
   uint8_t  _dataPin   = 0;

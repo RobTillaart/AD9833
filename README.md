@@ -38,20 +38,21 @@ Note: With an external 1 MHz clock smaller frequency steps 0.004 Hz. can be made
 This is not tested yet.
 
 
-#### Compatibles ??
+#### Compatibles ?
 
 List of (partially) compatibles in the series, that might work (partially) with this library.
 
-TODO: Investigations needed, verify table below (hardware needed).
+|   type   |  freq max  |  freq step  |  wave forms          |  Notes  |
+|:--------:|:----------:|:-----------:|:--------------------:|:--------|
+|  AD9832  |  12.5 MHz  |             | SINE                 |
+|  AD9833  |  12.5 MHz  |   0.1  Hz   | SINE TRANGLE SQUARE  |  for reference
+|  AD9834  |  37.5 MHz  |   0.28 Hz   | SINE TRANGLE         |  has extra HW lines.
+|  AD9835  |  50.0 MHz  |   0.01 Hz   |   ??                 |  looks not compatible
+|  AD9837  |  16.0 MHz  |   0.06 Hz   | SINE TRANGLE SQUARE  |
+|  AD9837  |   8.0 MHz  |   0.06 Hz   | SINE TRANGLE         |
 
-|   type   |  freq max  |  freq step  |  wave forms  |  Notes  |
-|:--------:|:----------:|:-----------:|:------------:|:--------|
-|  AD9832  |  12.5 MHz  |             |  SI          |
-|  AD9833  |  12.5 MHz  |   0.1  Hz   |  SI  TR  SQ  |  for reference
-|  AD9834  |  37.5 MHz  |   0.28 Hz   |  SI  TR      |  has extra HW lines.
-|  AD9835  |  50.0 MHz  |   0.01 Hz   |      ??      |  looks not compatible
-|  AD9837  |  16.0 MHz  |   0.06 Hz   |  SI  TR  SQ  |
-|  AD9837  |   8.0 MHz  |   0.06 Hz   |  SI  TR      |
+
+TODO: Investigations needed, verify table below (hardware needed).
 
 If you have experience with one of the above "compatibles" and this library, 
 please let me know by opening an issue. 
@@ -117,10 +118,9 @@ Read datasheet for detailed description of the pins.
 
 #### Constructor
 
-for SW SPI you need to define the data and clock pin.
-  - selectPin = chip select.
 If the selectPin is set to 255, external FSYNC is used. 
 See section below.
+
 
 - **AD9833(uint8_t selectPin, SPIClassRP2040 \* mySPI = &SPI)** Constructor HW SPI.
 - **AD9833(uint8_t selectPin,SPIClass \* mySPI = &SPI )** Constructor HW SPI
@@ -245,7 +245,6 @@ As this implementation is experimental, the interface might change in the future
 - update documentation
 - get hardware to test
 
-
 #### Should
 
 - investigate HLB mode versus B28 mode
@@ -255,13 +254,11 @@ As this implementation is experimental, the interface might change in the future
   - change channels etc.
 - test on ESP32 (3V3)
 
-
 #### Could
 
 - extend unit tests
 - add examples
   - for ESP32 HWSPI interface
-- move code to .cpp
 - solve MAGIC numbers (defaults)
 - setting half freq register for performance mode.
   - HLB mode
@@ -269,7 +266,6 @@ As this implementation is experimental, the interface might change in the future
 - investigate compatibility AD9834 a.o.
 - add **setPhaseRadians(float radians, uint8_t channel)** wrapper.
 - add **getPhaseRadians(uint8_t channel)** wrapper.
-
 
 #### Wont
 
