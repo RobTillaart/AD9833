@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 - refactor **writeFrequencyRegister()** to make it more robust. See #10.
 - catch define conflict __SPI_CLASS__
 - update readme.md
+- add experimental support for HLB write mode
+  - **void writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)**
+  - **void writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)**
 
 
 ## [0.2.0] - 2023-11-26

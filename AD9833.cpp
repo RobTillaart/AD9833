@@ -8,17 +8,21 @@
 
 #include "AD9833.h"
 
+//  FREQUENCY REGISTER BITS
+#define AD9833_FREG1        0x8000
+#define AD9833_FREG0        0x4000
+
 //  CONTROL REGISTER BITS
-#define AD9833_B28      (1 << 13)
-#define AD9833_HLB      (1 << 12)   //  not used yet.
-#define AD9833_FSELECT  (1 << 11)
-#define AD9833_PSELECT  (1 << 10)
-#define AD9833_RESET    (1 << 8)
-#define AD9833_SLEEP1   (1 << 7)
-#define AD9833_SLEEP12  (1 << 6)
-#define AD9833_OPBITEN  (1 << 5)
-#define AD9833_DIV2     (1 << 3)
-#define AD9833_MODE     (1 << 1)
+#define AD9833_B28          (1 << 13)
+#define AD9833_HLB          (1 << 12)   //  not used yet.
+#define AD9833_FSELECT      (1 << 11)
+#define AD9833_PSELECT      (1 << 10)
+#define AD9833_RESET        (1 << 8)
+#define AD9833_SLEEP1       (1 << 7)
+#define AD9833_SLEEP12      (1 << 6)
+#define AD9833_OPBITEN      (1 << 5)
+#define AD9833_DIV2         (1 << 3)
+#define AD9833_MODE         (1 << 1)
 
 
 
@@ -233,7 +237,7 @@ bool AD9833::usesHWSPI()
 
 ////////////////////////////////////////////////////////////////
 //
-//  PRIVATE
+//  LOW LEVEL API - Expert users only
 //
 void AD9833::writeControlRegister(uint16_t value)
 {
@@ -247,8 +251,8 @@ void AD9833:: writeFrequencyRegister(uint8_t reg, uint32_t freq)
   uint16_t LSB = 0;
   uint16_t MSB = 0;
   if (reg > 1) return;
-  if (reg == 0) LSB = 0x4000;  //  bit 15 and 14    01
-  if (reg == 1) LSB = 0x8000;  //  bit 15 and 14    10
+  if (reg == 0) LSB = AD9833_FREG0;  //  bit 15 and 14    01
+  if (reg == 1) LSB = AD9833_FREG1;  //  bit 15 and 14    10
   //  copy register mask.
   MSB = LSB;
 
@@ -283,6 +287,60 @@ void AD9833::writePhaseRegister(uint8_t reg, uint16_t value)
 }
 
 
+
+///////////////////////////////////////////////////////////////////
+//
+//  EXPERIMENTAL
+//
+void AD9833:: writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)
+{
+  if (reg > 1) return;
+  //  force 14 bit
+  LSB &= 0x3FFF;
+  if (reg == 0) LSB |= AD9833_FREG0;  //  bit 15 and 14    01
+  if (reg == 1) LSB |= AD9833_FREG1;  //  bit 15 and 14    10
+
+  //  be sure B28 and HLB bit is cleared.
+  //  assumes _control is right to keep performance.
+  if ((_control & (AD9833_B28 | AD9833_HLB)) > 0)
+  {
+    _control &= ~AD9833_B28;
+    _control &= ~AD9833_HLB;
+    writeControlRegister(_control);
+  }
+
+  //  send the least significant 14 bits
+  writeData(LSB);
+}
+
+
+void AD9833:: writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)
+{
+  if (reg > 1) return;
+  //  force 14 bit
+  MSB &= 0x3FFF;
+  if (reg == 0) MSB |= AD9833_FREG0;  //  bit 15 and 14    01
+  if (reg == 1) MSB |= AD9833_FREG1;  //  bit 15 and 14    10
+
+  //  be sure B28 is cleared and HLB bit is set.
+  //  assumes _control is right to keep performance.
+  if ( ((_control & AD9833_B28) > 0) || ((_control & AD9833_HLB) == 0) )
+  {
+    _control &= ~AD9833_B28;
+    _control |= AD9833_HLB;
+    writeControlRegister(_control);
+  }
+
+  //  send the least significant 14 bits
+  writeData(MSB);
+}
+
+
+
+///////////////////////////////////////////////////////////////////
+//
+//  PRIVATE
+//
 void AD9833::writeData(uint16_t data)
 {
   if (_useSelect) digitalWrite(_selectPin, LOW);

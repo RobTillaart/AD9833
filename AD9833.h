@@ -83,6 +83,11 @@ public:
   void     writePhaseRegister(uint8_t reg, uint16_t value);
 
 
+  //  EXPERIMENTAL
+  void     writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB);
+  void     writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB);
+
+
 private:
   void     writeData(uint16_t data);
 
