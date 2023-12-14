@@ -14,7 +14,7 @@
 #define AD9833_LIB_VERSION     (F("0.2.1"))
 
 
-#if defined(__SPI_CLASS__)
+#if !defined(__SPI_CLASS__)
   #if defined(ARDUINO_ARCH_RP2040)
   #define __SPI_CLASS__   SPIClassRP2040
   #else
