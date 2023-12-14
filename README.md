@@ -207,7 +207,7 @@ Especially frequency setting is improved as the float **setFrequency()** does
 not have the 28 bits precision of the register.
 
 - **void writeControlRegister(uint16_t value)** see datasheet
-- **void writeFreqRegister(uint8_t reg, uint32_t freq)** reg = 0 or 1, freq = 0 .. 134217728
+- **void writeFrequencyRegister(uint8_t reg, uint32_t freq)** reg = 0 or 1, freq = 0 .. 134217728
 - **void writePhaseRegister(uint8_t reg, uint16_t value)** reg = 0 or 1, freq = 0 .. 4095
   
 
@@ -247,7 +247,9 @@ As this implementation is experimental, the interface might change in the future
 
 #### Should
 
-- investigate HLB mode versus B28 mode
+- investigate **HLB mode** versus B28 mode
+  - need **void writeFrequencyMSB14(channel, uint16_t MSB)**  //  0.3.0
+  - need **void writeFrequencyLSB14(channel, uint16_t LSB)**  //  0.3.0
 - investigate external clock
 - investigate timing (response time)
   - change freq

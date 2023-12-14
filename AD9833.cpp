@@ -2,7 +2,7 @@
 //    FILE: AD9833.cpp
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for AD9833 function generator
-// VERSION: 0.2.0
+// VERSION: 0.2.1
 //     URL: https://github.com/RobTillaart/AD9833
 //
 
@@ -10,7 +10,7 @@
 
 //  CONTROL REGISTER BITS
 #define AD9833_B28      (1 << 13)
-#define AD9833_HLB      (1 << 12)
+#define AD9833_HLB      (1 << 12)   //  not used yet.
 #define AD9833_FSELECT  (1 << 11)
 #define AD9833_PSELECT  (1 << 10)
 #define AD9833_RESET    (1 << 8)
@@ -78,7 +78,7 @@ void AD9833::reset()
 
 void AD9833::hardwareReset()
 {
-  writeControlRegister(_control | 0x0100);
+  writeControlRegister(_control | AD9833_RESET);
   //  reset all library variables to be in "sync" with hardware.
   _control  = 0;
   _waveform = AD9833_OFF;
@@ -148,7 +148,7 @@ float AD9833::setFrequency(float freq, uint8_t channel)
   //  rounding
   uint32_t fr = round(_freq[channel] * (268435456.0 / 25000000.0));
 
-  writeFreqRegister(channel, fr);
+  writeFrequencyRegister(channel, fr);
 
   return _freq[channel];
 }
@@ -242,20 +242,32 @@ void AD9833::writeControlRegister(uint16_t value)
 }
 
 
-void AD9833::writeFreqRegister(uint8_t reg, uint32_t freq)
+void AD9833:: writeFrequencyRegister(uint8_t reg, uint32_t freq)
 {
-  uint16_t data = 0;
+  uint16_t LSB = 0;
+  uint16_t MSB = 0;
   if (reg > 1) return;
-  if (reg == 0) data = 0x4000;  //  bit 15 and 14    01
-  if (reg == 1) data = 0x8000;  //  bit 15 and 14    10
+  if (reg == 0) LSB = 0x4000;  //  bit 15 and 14    01
+  if (reg == 1) LSB = 0x8000;  //  bit 15 and 14    10
+  //  copy register mask.
+  MSB = LSB;
+
+  //  be sure B28 bit is set.
+  //  assumes _control is right to keep performance.
+  if ((_control & AD9833_B28) == 0)
+  {
+    _control |= AD9833_B28;
+    writeControlRegister(_control);
+  }
 
   //  28 bits in two sets of 14
-  data |= (freq & 0x3FFF);  //  least significant 14 bits
-  writeData(data);
+  LSB |= (freq & 0x3FFF);
+  MSB |= ((freq >> 14) & 0x3FFF);
 
-  data &= 0xC000;           //  remove freq data LSB
-  data |= (freq >> 14);     //  most significant  14 bits
-  writeData(data);
+  //  first send the least significant 14 bits
+  writeData(LSB);
+  //  then send the most significant 14 bits
+  writeData(MSB);
 }
 
 

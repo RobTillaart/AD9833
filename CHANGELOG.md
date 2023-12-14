@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
+## [0.2.1] - 2023-11-26
+- rename **writeFreqRegister()** to **writeFrequencyRegister()**
+- refactor **writeFrequencyRegister()** to make it more robust. See #10.
+- catch define conflict __SPI_CLASS__
+- update readme.md
+
+
 ## [0.2.0] - 2023-11-26
 - refactor constructor/begin interface - breaking changes.
   - minimize conditional code. -- create SPI_CLASS macro to solve it.
