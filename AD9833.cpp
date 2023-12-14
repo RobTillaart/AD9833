@@ -268,10 +268,12 @@ void AD9833:: writeFrequencyRegister(uint8_t reg, uint32_t freq)
   LSB |= (freq & 0x3FFF);
   MSB |= ((freq >> 14) & 0x3FFF);
 
+  //  experimental
+  writeData28(LSB, MSB);
   //  first send the least significant 14 bits
-  writeData(LSB);
+  //  writeData(LSB);
   //  then send the most significant 14 bits
-  writeData(MSB);
+  //  writeData(MSB);
 }
 
 
@@ -292,7 +294,7 @@ void AD9833::writePhaseRegister(uint8_t reg, uint16_t value)
 //
 //  EXPERIMENTAL
 //
-void AD9833:: writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)
+void AD9833::writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)
 {
   if (reg > 1) return;
   //  force 14 bit
@@ -314,7 +316,7 @@ void AD9833:: writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)
 }
 
 
-void AD9833:: writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)
+void AD9833::writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)
 {
   if (reg > 1) return;
   //  force 14 bit
@@ -366,6 +368,43 @@ void AD9833::writeData(uint16_t data)
   }
   if (_useSelect) digitalWrite(_selectPin, HIGH);
 }
+
+
+void AD9833::writeData28(uint16_t LSB, uint16_t MSB)
+{
+    if (_useSelect) digitalWrite(_selectPin, LOW);
+  if (_hwSPI)
+  {
+    _mySPI->beginTransaction(_spi_settings);
+    _mySPI->transfer16(LSB);
+    _mySPI->transfer16(MSB);
+    _mySPI->endTransaction();
+  }
+  else
+  {
+    //  local variables is fast.
+    uint8_t clk = _clockPin;
+    uint8_t dao = _dataPin;
+    //  MSBFIRST
+    for (uint16_t mask = 0x8000; mask; mask >>= 1)
+    {
+      digitalWrite(dao, (LSB & mask) !=0 ? HIGH : LOW);
+      digitalWrite(clk, LOW);
+      digitalWrite(clk, HIGH);
+    }
+    
+    for (uint16_t mask = 0x8000; mask; mask >>= 1)
+    {
+      digitalWrite(dao, (MSB & mask) !=0 ? HIGH : LOW);
+      digitalWrite(clk, LOW);
+      digitalWrite(clk, HIGH);
+    }
+    
+    digitalWrite(dao, LOW);
+  }
+  if (_useSelect) digitalWrite(_selectPin, HIGH);
+}
+
 
 
 //  -- END OF FILE --

@@ -90,6 +90,7 @@ public:
 
 private:
   void     writeData(uint16_t data);
+  void     writeData28(uint16_t LSB, uint16_t MSB);
 
   bool     _hwSPI    = true;
   uint32_t _SPIspeed = 8000000;

@@ -8,7 +8,7 @@
 #include "AD9833.h"
 
 
-//  AD9833 AD(10, 11, 13);  //  software SPI
+// AD9833 AD(10, 11, 13);  //  software SPI
 AD9833 AD(10);       //  hardware SPI
 
 
