@@ -3,7 +3,7 @@
 //    FILE: AD9833.h
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for AD9833 function generator.
-// VERSION: 0.2.1
+// VERSION: 0.3.0
 //     URL: https://github.com/RobTillaart/AD9833
 
 
@@ -11,7 +11,7 @@
 #include "SPI.h"
 
 
-#define AD9833_LIB_VERSION     (F("0.2.1"))
+#define AD9833_LIB_VERSION     (F("0.3.0"))
 
 
 #if !defined(__SPI_CLASS__)
@@ -79,13 +79,13 @@ public:
 
   //  LOW LEVEL API - Expert users only
   void     writeControlRegister(uint16_t value);
-  void     writeFrequencyRegister(uint8_t reg, uint32_t freq);
-  void     writePhaseRegister(uint8_t reg, uint16_t value);
+  void     writeFrequencyRegister(uint8_t channel, uint32_t freq);
+  void     writePhaseRegister(uint8_t channel, uint16_t value);
 
 
-  //  EXPERIMENTAL
-  void     writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB);
-  void     writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB);
+  //  EXPERIMENTAL HLB MODE (14 bit)
+  void     writeFrequencyRegisterLSB(uint8_t channel, uint16_t LSB);
+  void     writeFrequencyRegisterMSB(uint8_t channel, uint16_t MSB);
 
 
 private:

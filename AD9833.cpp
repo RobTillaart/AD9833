@@ -2,7 +2,7 @@
 //    FILE: AD9833.cpp
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for AD9833 function generator
-// VERSION: 0.2.1
+// VERSION: 0.3.0
 //     URL: https://github.com/RobTillaart/AD9833
 //
 
@@ -14,7 +14,7 @@
 
 //  CONTROL REGISTER BITS
 #define AD9833_B28          (1 << 13)
-#define AD9833_HLB          (1 << 12)   //  not used yet.
+#define AD9833_HLB          (1 << 12)
 #define AD9833_FSELECT      (1 << 11)
 #define AD9833_PSELECT      (1 << 10)
 #define AD9833_RESET        (1 << 8)
@@ -75,7 +75,7 @@ void AD9833::begin()
 void AD9833::reset()
 {
   hardwareReset();
-  _control = AD9833_B28;
+  _control = AD9833_B28;  //  implicit select sine wave.
   writeControlRegister(_control);
 }
 
@@ -246,14 +246,14 @@ void AD9833::writeControlRegister(uint16_t value)
 }
 
 
-void AD9833:: writeFrequencyRegister(uint8_t reg, uint32_t freq)
+void AD9833:: writeFrequencyRegister(uint8_t channel, uint32_t freq)
 {
   uint16_t LSB = 0;
   uint16_t MSB = 0;
-  if (reg > 1) return;
-  if (reg == 0) LSB = AD9833_FREG0;  //  bit 15 and 14    01
-  if (reg == 1) LSB = AD9833_FREG1;  //  bit 15 and 14    10
-  //  copy register mask.
+  if (channel > 1) return;
+  if (channel == 0) LSB = AD9833_FREG0;  //  bit 15 and 14    01
+  if (channel == 1) LSB = AD9833_FREG1;  //  bit 15 and 14    10
+  //  copy channel mask.
   MSB = LSB;
 
   //  be sure B28 bit is set.
@@ -264,21 +264,21 @@ void AD9833:: writeFrequencyRegister(uint8_t reg, uint32_t freq)
   LSB |= (freq & 0x3FFF);
   MSB |= ((freq >> 14) & 0x3FFF);
 
-  //  experimental
-  // writeData28(LSB, MSB);
+  //  faster to write them in one SPI transaction
+  writeData28(LSB, MSB);
   //  first send the least significant 14 bits
-   writeData(LSB);
-   // then send the most significant 14 bits
-   writeData(MSB);
+  //  writeData(LSB);
+  //  then send the most significant 14 bits
+  //  writeData(MSB);
 }
 
 
-void AD9833::writePhaseRegister(uint8_t reg, uint16_t value)
+void AD9833::writePhaseRegister(uint8_t channel, uint16_t value)
 {
   uint16_t data = 0;
-  if (reg > 1) return;
-  if (reg == 0) data = 0xC000;  //  bit 15 and 14 and 13   110
-  if (reg == 1) data = 0xE000;  //  bit 15 and 14 and 13   111
+  if (channel > 1) return;
+  if (channel == 0) data = 0xC000;  //  bit 15 and 14 and 13   110
+  if (channel == 1) data = 0xE000;  //  bit 15 and 14 and 13   111
 
   data |= (value & 0x0FFF);
   writeData(data);
@@ -290,13 +290,13 @@ void AD9833::writePhaseRegister(uint8_t reg, uint16_t value)
 //
 //  EXPERIMENTAL
 //
-void AD9833::writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)
+void AD9833::writeFrequencyRegisterLSB(uint8_t channel, uint16_t LSB)
 {
-  if (reg > 1) return;
+  if (channel > 1) return;
   //  force 14 bit
   LSB &= 0x3FFF;
-  if (reg == 0) LSB |= AD9833_FREG0;  //  bit 15 and 14    01
-  if (reg == 1) LSB |= AD9833_FREG1;  //  bit 15 and 14    10
+  if (channel == 0) LSB |= AD9833_FREG0;  //  bit 15 and 14    01
+  if (channel == 1) LSB |= AD9833_FREG1;  //  bit 15 and 14    10
 
   //  be sure B28 and HLB bit is cleared.
   _control &= ~AD9833_B28;
@@ -308,13 +308,13 @@ void AD9833::writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)
 }
 
 
-void AD9833::writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)
+void AD9833::writeFrequencyRegisterMSB(uint8_t channel, uint16_t MSB)
 {
-  if (reg > 1) return;
+  if (channel > 1) return;
   //  force 14 bit
   MSB &= 0x3FFF;
-  if (reg == 0) MSB |= AD9833_FREG0;  //  bit 15 and 14    01
-  if (reg == 1) MSB |= AD9833_FREG1;  //  bit 15 and 14    10
+  if (channel == 0) MSB |= AD9833_FREG0;  //  bit 15 and 14    01
+  if (channel == 1) MSB |= AD9833_FREG1;  //  bit 15 and 14    10
 
   //  be sure B28 is cleared and HLB bit is set.
   _control &= ~AD9833_B28;
@@ -333,7 +333,6 @@ void AD9833::writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)
 //
 void AD9833::writeData(uint16_t data)
 {
-  Serial.println(data, HEX);
   if (_useSelect) digitalWrite(_selectPin, LOW);
   if (_hwSPI)
   {
@@ -361,7 +360,7 @@ void AD9833::writeData(uint16_t data)
 
 void AD9833::writeData28(uint16_t LSB, uint16_t MSB)
 {
-    if (_useSelect) digitalWrite(_selectPin, LOW);
+  if (_useSelect) digitalWrite(_selectPin, LOW);
   if (_hwSPI)
   {
     _mySPI->beginTransaction(_spi_settings);
