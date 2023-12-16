@@ -257,23 +257,19 @@ void AD9833:: writeFrequencyRegister(uint8_t reg, uint32_t freq)
   MSB = LSB;
 
   //  be sure B28 bit is set.
-  //  assumes _control is right to keep performance.
-  if ((_control & AD9833_B28) == 0)
-  {
-    _control |= AD9833_B28;
-    writeControlRegister(_control);
-  }
+  _control |= AD9833_B28;
+  writeControlRegister(_control);
 
   //  28 bits in two sets of 14
   LSB |= (freq & 0x3FFF);
   MSB |= ((freq >> 14) & 0x3FFF);
 
   //  experimental
-  writeData28(LSB, MSB);
+  // writeData28(LSB, MSB);
   //  first send the least significant 14 bits
-  //  writeData(LSB);
-  //  then send the most significant 14 bits
-  //  writeData(MSB);
+   writeData(LSB);
+   // then send the most significant 14 bits
+   writeData(MSB);
 }
 
 
@@ -303,13 +299,9 @@ void AD9833::writeFrequencyRegisterLSB(uint8_t reg, uint16_t LSB)
   if (reg == 1) LSB |= AD9833_FREG1;  //  bit 15 and 14    10
 
   //  be sure B28 and HLB bit is cleared.
-  //  assumes _control is right to keep performance.
-  if ((_control & (AD9833_B28 | AD9833_HLB)) > 0)
-  {
-    _control &= ~AD9833_B28;
-    _control &= ~AD9833_HLB;
-    writeControlRegister(_control);
-  }
+  _control &= ~AD9833_B28;
+  _control &= ~AD9833_HLB;
+  writeControlRegister(_control);
 
   //  send the least significant 14 bits
   writeData(LSB);
@@ -325,13 +317,9 @@ void AD9833::writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)
   if (reg == 1) MSB |= AD9833_FREG1;  //  bit 15 and 14    10
 
   //  be sure B28 is cleared and HLB bit is set.
-  //  assumes _control is right to keep performance.
-  if ( ((_control & AD9833_B28) > 0) || ((_control & AD9833_HLB) == 0) )
-  {
-    _control &= ~AD9833_B28;
-    _control |= AD9833_HLB;
-    writeControlRegister(_control);
-  }
+  _control &= ~AD9833_B28;
+  _control |= AD9833_HLB;
+  writeControlRegister(_control);
 
   //  send the least significant 14 bits
   writeData(MSB);
@@ -345,6 +333,7 @@ void AD9833::writeFrequencyRegisterMSB(uint8_t reg, uint16_t MSB)
 //
 void AD9833::writeData(uint16_t data)
 {
+  Serial.println(data, HEX);
   if (_useSelect) digitalWrite(_selectPin, LOW);
   if (_hwSPI)
   {
