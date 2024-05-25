@@ -6,7 +6,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
-## [0.4.0] - 2024-05-24
+## [0.4.1] - 2024-05-24
 - add support for ARDUINO_ARCH_MBED
 - add sweep example
 - add version to examples
