@@ -1,9 +1,8 @@
 //
 //    FILE: AD9833_sweep.ino
 //  AUTHOR: Rob Tillaart
-//    DATE: 2024-02-27
 // PURPOSE: demo AD9833 wave form generator
-
+//     URL: https://github.com/RobTillaart/AD9833
 
 #include "AD9833.h"
 
@@ -17,7 +16,11 @@ bool up = true;
 void setup()
 {
   Serial.begin(115200);
+  while (!Serial);
   Serial.println(__FILE__);
+  Serial.print("AD9833_LIB_VERSION: ");
+  Serial.println(AD9833_LIB_VERSION);
+  Serial.println();
 
   SPI.begin();
   AD.begin();
@@ -34,7 +37,7 @@ void loop()
   if (freq <= 100) up = true;
   AD.setFrequency(freq);
 
-  delay(100)  //  to simulate other tasks
+  delay(100);  //  to simulate other tasks
 }
 
 

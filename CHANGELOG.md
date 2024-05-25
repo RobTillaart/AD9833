@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 ## [0.4.0] - 2024-05-24
 - add support for ARDUINO_ARCH_MBED
+- add sweep example
+- add version to examples
 
 ## [0.4.0] - 2024-01-20
 - Fix #14, improve handling SPI dependency.
