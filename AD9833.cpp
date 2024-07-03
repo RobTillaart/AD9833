@@ -2,11 +2,13 @@
 //    FILE: AD9833.cpp
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for AD9833 function generator
-// VERSION: 0.4.1
+//    DATE: 2023-08-25
+// VERSION: 0.4.2
 //     URL: https://github.com/RobTillaart/AD9833
-//
+
 
 #include "AD9833.h"
+
 
 //  FREQUENCY REGISTER BITS
 #define AD9833_FREG1        0x8000
@@ -25,7 +27,6 @@
 #define AD9833_MODE         (1 << 1)
 
 
-
 //  HARDWARE SPI
 AD9833::AD9833(uint8_t slaveSelect, __SPI_CLASS__ * mySPI)
 {
@@ -33,6 +34,7 @@ AD9833::AD9833(uint8_t slaveSelect, __SPI_CLASS__ * mySPI)
   _hwSPI     = true;
   _mySPI     = mySPI;
 }
+
 
 //  SOFTWARE SPI
 AD9833::AD9833(uint8_t slaveSelect, uint8_t spiData, uint8_t spiClock)
@@ -67,6 +69,15 @@ void AD9833::begin()
     pinMode(_clockPin, OUTPUT);
     digitalWrite(_dataPin,  LOW);
     digitalWrite(_clockPin, HIGH);
+
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
+    uint8_t _port    = digitalPinToPort(_dataPin);
+    _dataOutRegister = portOutputRegister(_port);
+    _dataOutBit      = digitalPinToBitMask(_dataPin);
+    _port            = digitalPinToPort(_clockPin);
+    _clockRegister   = portOutputRegister(_port);
+    _clockBit        = digitalPinToBitMask(_clockPin);
+#endif
   }
   reset();
 }
@@ -356,17 +367,40 @@ void AD9833::writeData(uint16_t data)
   }
   else
   {
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
+
+    uint8_t cbmask1  = _clockBit;
+    uint8_t cbmask2  = ~_clockBit;
+    uint8_t outmask1 = _dataOutBit;
+    uint8_t outmask2 = ~_dataOutBit;
+
+    //  MSBFIRST
+    for (uint16_t mask = 0x8000; mask; mask >>= 1)
+    {
+      uint8_t oldSREG = SREG;
+      noInterrupts();
+      if (data & mask) *_dataOutRegister |= outmask1;
+      else             *_dataOutRegister &= outmask2;
+      *_clockRegister &= cbmask2;
+      *_clockRegister |= cbmask1;
+      SREG = oldSREG;
+    }
+
+#else  //  REFERENCE IMPLEMENTATION
+
     //  local variables is fast.
     uint8_t clk = _clockPin;
     uint8_t dao = _dataPin;
     //  MSBFIRST
     for (uint16_t mask = 0x8000; mask; mask >>= 1)
     {
-      digitalWrite(dao, (data & mask) !=0 ? HIGH : LOW);
+      digitalWrite(dao, (data & mask) != 0 ? HIGH : LOW);
       digitalWrite(clk, LOW);
       digitalWrite(clk, HIGH);
     }
     digitalWrite(dao, LOW);
+
+#endif
   }
   if (_useSelect) digitalWrite(_selectPin, HIGH);
 }
@@ -384,25 +418,58 @@ void AD9833::writeData28(uint16_t LSB, uint16_t MSB)
   }
   else
   {
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
+
+    uint8_t cbmask1  = _clockBit;
+    uint8_t cbmask2  = ~_clockBit;
+    uint8_t outmask1 = _dataOutBit;
+    uint8_t outmask2 = ~_dataOutBit;
+
+    for (uint16_t mask = 0x8000; mask; mask >>= 1)
+    {
+      uint8_t oldSREG = SREG;
+      noInterrupts();
+      if (LSB & mask) *_dataOutRegister |= outmask1;
+      else            *_dataOutRegister &= outmask2;
+      *_clockRegister &= cbmask2;
+      *_clockRegister |= cbmask1;
+      SREG = oldSREG;
+    }
+
+    for (uint16_t mask = 0x8000; mask; mask >>= 1)
+    {
+      uint8_t oldSREG = SREG;
+      noInterrupts();
+      if (MSB & mask) *_dataOutRegister |= outmask1;
+      else            *_dataOutRegister &= outmask2;
+      *_clockRegister &= cbmask2;
+      *_clockRegister |= cbmask1;
+      SREG = oldSREG;
+    }
+
+#else  //  REFERENCE IMPLEMENTATION
+
     //  local variables is fast.
     uint8_t clk = _clockPin;
     uint8_t dao = _dataPin;
-    //  MSBFIRST
+
     for (uint16_t mask = 0x8000; mask; mask >>= 1)
     {
-      digitalWrite(dao, (LSB & mask) !=0 ? HIGH : LOW);
+      digitalWrite(dao, (LSB & mask) != 0 ? HIGH : LOW);
       digitalWrite(clk, LOW);
       digitalWrite(clk, HIGH);
     }
 
     for (uint16_t mask = 0x8000; mask; mask >>= 1)
     {
-      digitalWrite(dao, (MSB & mask) !=0 ? HIGH : LOW);
+      digitalWrite(dao, (MSB & mask) != 0 ? HIGH : LOW);
       digitalWrite(clk, LOW);
       digitalWrite(clk, HIGH);
     }
 
     digitalWrite(dao, LOW);
+
+#endif
   }
   if (_useSelect) digitalWrite(_selectPin, HIGH);
 }

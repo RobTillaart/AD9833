@@ -3,7 +3,8 @@
 //    FILE: AD9833.h
 //  AUTHOR: Rob Tillaart
 // PURPOSE: Arduino library for AD9833 function generator.
-// VERSION: 0.4.1
+//    DATE: 2023-08-25
+// VERSION: 0.4.2
 //     URL: https://github.com/RobTillaart/AD9833
 
 
@@ -11,7 +12,7 @@
 #include "SPI.h"
 
 
-#define AD9833_LIB_VERSION     (F("0.4.1"))
+#define AD9833_LIB_VERSION     (F("0.4.2"))
 
 
 #ifndef __SPI_CLASS__
@@ -107,8 +108,14 @@ private:
   SPISettings     _spi_settings;
 
   //  PINS
-  uint8_t  _dataPin   = 0;
-  uint8_t  _clockPin  = 0;
+#if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
+  volatile uint8_t *_dataOutRegister;
+  uint8_t  _dataOutBit;
+  volatile uint8_t *_clockRegister;
+  uint8_t  _clockBit;
+#endif
+  uint8_t  _dataPin;
+  uint8_t  _clockPin;
   uint8_t  _selectPin = 0;
   bool     _useSelect = false;
 
