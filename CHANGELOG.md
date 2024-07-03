@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ## [0.4.2] - 2024-07-03
-- optimize AVR SW SPI 
+- optimize AVR SW SPI (about factor 3.4 faster)
+- add **float setPhaseRadians(float phase, uint8_t channel = 0)**
+- add **float getPhaseRadians(uint8_t channel = 0)**
+- add **getPowerMode()**
+- add performance measurements (examples)
+- minor edits
 
 ## [0.4.1] - 2024-05-24
 - add support for ARDUINO_ARCH_MBED

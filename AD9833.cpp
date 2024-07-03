@@ -105,16 +105,23 @@ void AD9833::hardwareReset()
 bool AD9833::setPowerMode(uint8_t mode)
 {
   if (mode > 3) return false;
-  _control &= 0xFF3F;       //  clear previous power flags
-  _control |= (mode << 6);  //  set the new power flags
+  //  clear previous power bits
+  _control &= ~(AD9833_SLEEP1 | AD9833_SLEEP12);
+  _control |= (mode << 6);  //  set the new power bits
   writeControlRegister(_control);
   return true;
 }
 
 
+uint8_t AD9833::getPowerMode()
+{
+  return (_control & (AD9833_SLEEP1 | AD9833_SLEEP12)) >> 6;
+}
+
+
 void AD9833::setWave(uint8_t waveform)
 {
-  if (waveform > 4) return;
+  if (waveform > AD9833_TRIANGLE) return;
 
   //  store waveform
   _waveform = waveform;
@@ -195,20 +202,36 @@ void  AD9833::setFrequencyChannel(uint8_t channel)
 float AD9833::setPhase(float phase, uint8_t channel)
 {
   if (channel > 1) return -1;
-  _phase[channel] = phase;
-  while (_phase[channel] >= AD9833_MAX_PHASE) _phase[channel] -= AD9833_MAX_PHASE;
-  while (_phase[channel] <  0) _phase[channel] += AD9833_MAX_PHASE;
+  //  local variable is faster than indexed array.
+  float newPhase = phase;
+  while (newPhase >= AD9833_MAX_PHASE) newPhase -= AD9833_MAX_PHASE;
+  while (newPhase <  0) newPhase += AD9833_MAX_PHASE;
+  _phase[channel] = newPhase;
 
-  uint16_t ph = _phase[channel] * (4095.0 / 360.0);
+  uint16_t ph = newPhase * (4095.0 / 360.0);
   writePhaseRegister(channel, ph);
 
-  return _phase[channel];
+  return newPhase;
 }
 
 
 float AD9833::getPhase(uint8_t channel)
 {
   return _phase[channel];
+}
+
+
+//       returns phase set (radians)
+//       [0 .. 2 PI>
+float AD9833::setPhaseRadians(float phase, uint8_t channel = 0)
+{
+  return setPhase(phase * RAD_TO_DEG, channel) * DEG_TO_RAD;
+}
+
+
+float AD9833::getPhaseRadians(uint8_t channel = 0)
+{
+  return getPhase(channel) * DEG_TO_RAD;
 }
 
 
@@ -300,12 +323,14 @@ void AD9833::writePhaseRegister(uint8_t channel, uint16_t value)
 void AD9833::setCrystalFrequency(float crystalFrequency)
 {
   //  calculate the often used factor
+  //  268435456.0 == POW2TO28
   _crystalFreqFactor = 268435456.0 / crystalFrequency;
 }
 
 
 float AD9833::getCrystalFrequency()
 {
+  //  268435456.0 == POW2TO28
   return 268435456.0 / _crystalFreqFactor;
 }
 
@@ -367,6 +392,7 @@ void AD9833::writeData(uint16_t data)
   }
   else
   {
+    //  SPI MODE2
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
 
     uint8_t cbmask1  = _clockBit;
@@ -398,7 +424,6 @@ void AD9833::writeData(uint16_t data)
       digitalWrite(clk, LOW);
       digitalWrite(clk, HIGH);
     }
-    digitalWrite(dao, LOW);
 
 #endif
   }
@@ -418,6 +443,7 @@ void AD9833::writeData28(uint16_t LSB, uint16_t MSB)
   }
   else
   {
+    //  SPI MODE2
 #if defined(ARDUINO_ARCH_AVR) || defined(ARDUINO_ARCH_MEGAAVR)
 
     uint8_t cbmask1  = _clockBit;
@@ -466,8 +492,6 @@ void AD9833::writeData28(uint16_t LSB, uint16_t MSB)
       digitalWrite(clk, LOW);
       digitalWrite(clk, HIGH);
     }
-
-    digitalWrite(dao, LOW);
 
 #endif
   }

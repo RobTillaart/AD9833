@@ -30,7 +30,7 @@ void setup()
   Serial.println();
   delay(10);
 
-  SPI.begin();
+  // SPI.begin();
 
   AD.begin();
 

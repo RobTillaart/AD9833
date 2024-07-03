@@ -54,7 +54,7 @@ public:
   void     hardwareReset();
   //       mode = 0..3 (datasheet)
   bool     setPowerMode(uint8_t mode = 0);
-
+  uint8_t  getPowerMode();
 
   void     setWave(uint8_t waveform = AD9833_OFF);
   uint8_t  getWave();
@@ -73,6 +73,10 @@ public:
   float    getPhase(uint8_t channel = 0);
   float    getMaxPhase();
   void     setPhaseChannel(uint8_t channel);
+  //       returns phase set (radians)
+  //       [0 .. 2 PI>
+  float    setPhaseRadians(float phase, uint8_t channel = 0);
+  float    getPhaseRadians(uint8_t channel = 0);
 
 
   //       Hardware SPI settings
