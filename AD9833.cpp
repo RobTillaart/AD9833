@@ -161,24 +161,29 @@ uint8_t AD9833::getWave()
 float AD9833::setFrequency(float frequency, uint8_t channel)
 {
   if (channel > 1) return -1;
-  _freq[channel] = frequency;
-  if (_freq[channel] > AD9833_MAX_FREQ) _freq[channel] = AD9833_MAX_FREQ;
-  if (_freq[channel] < 0) _freq[channel] = 0;
+  //  if (_freq[channel] == frequency) return frequency;
+  //  local variable is faster.
+  float newFrequency = frequency;
+  if (newFrequency < 0) newFrequency = 0;
+  else if (newFrequency > AD9833_MAX_FREQ) newFrequency = AD9833_MAX_FREQ;
 
   //  convert to bit pattern
   //  fr = round(frequency * pow(2, 28) / 25 MHz));  //  25 MHz == crystal frequency.
   //  _crystalFreqFactor == (pow(2, 28) / crystal frequency);
-  //  rounding
-  uint32_t freq = round(_freq[channel] * _crystalFreqFactor);
+  //  round() to minimize error / use the whole range
+  uint32_t freq = round(newFrequency * _crystalFreqFactor);
 
   writeFrequencyRegister(channel, freq);
 
-  return _freq[channel];
+  //  cache the newFrequency;
+  _freq[channel] = newFrequency;
+  return newFrequency;
 }
 
 
 float AD9833::getFrequency(uint8_t channel)
 {
+  //  return round(_freq[channel] * _crystalFreqFactor) / _crystalFreqFactor;
   return _freq[channel];
 }
 
@@ -202,27 +207,31 @@ void  AD9833::setFrequencyChannel(uint8_t channel)
 float AD9833::setPhase(float phase, uint8_t channel)
 {
   if (channel > 1) return -1;
-  //  local variable is faster than indexed array.
+  //  local variable is faster.
   float newPhase = phase;
   while (newPhase >= AD9833_MAX_PHASE) newPhase -= AD9833_MAX_PHASE;
   while (newPhase <  0) newPhase += AD9833_MAX_PHASE;
-  _phase[channel] = newPhase;
 
-  uint16_t ph = newPhase * (4095.0 / 360.0);
+  //  round() to minimize error / use the whole range 0..4095
+  uint16_t ph = round(newPhase * (4095.0 / 360.0));
   writePhaseRegister(channel, ph);
 
+  //  cache the newPhase
+  _phase[channel] = newPhase;
   return newPhase;
 }
 
 
 float AD9833::getPhase(uint8_t channel)
 {
+  //  more precise => more math;
+  //  return round(_phase[channel] * (4095.0 / 360.0)) / (4095.0 / 360.0);
   return _phase[channel];
 }
 
 
-//       returns phase set (radians)
-//       [0 .. 2 PI>
+//  returns phase set (radians) - not optimized.
+//  [0 .. 2 PI>
 float AD9833::setPhaseRadians(float phase, uint8_t channel)
 {
   return setPhase(phase * RAD_TO_DEG, channel) * DEG_TO_RAD;
@@ -371,7 +380,7 @@ void AD9833::writeFrequencyRegisterMSB(uint8_t channel, uint16_t MSB)
   _control |= AD9833_HLB;
   writeControlRegister(_control);
 
-  //  send the least significant 14 bits
+  //  send the most significant 14 bits
   writeData(MSB);
 }
 

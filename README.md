@@ -299,22 +299,30 @@ As this implementation is experimental, the interface might change in the future
 
 #### Should
 
-- evaluate the **setCrytalFrequency()** implementation / performance.
-  - runtime adjust-ability is preferred however...
 - investigate external clock
-- investigate timing (response time)
-  - change freq
-  - change channels etc.
 - test on ESP32 (3V3)
 
 #### Could
 
+- **setFrequency()** if cache value equals new frequency?
+  - ```if (_freq[channel] == frequency) return frequency;```
+- **setPhase()** if cache value equals new phase?
+  - ```if (_phase[channel] == phase) return phase;```
+  - make phase array 16 bit "register value"?
+- **getFrequency()** calculate freq back from set register value?
+  - slower
+  - more accurate.
+  - separate function **getFrequencyFromRegister()** !
+- **getPhase()** calculate phase back from set register value?
+  - idem.
 - extend unit tests
 - add examples
   - for ESP32 HWSPI interface
 - solve MAGIC numbers (defaults)
 - extend performance measurements
+- add defines AD9833_POWERMODE_xxxx ?
 - investigate compatibility AD9834 a.o.
+  - need time / HW for this.
 
 
 #### Wont

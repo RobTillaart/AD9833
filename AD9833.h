@@ -130,6 +130,7 @@ private:
   float    _freq[2]   = { 0, 0 };  //  Hz
   float    _phase[2]  = { 0, 0 };  //  angle 0..360
 
+  //  POW2TO28 / 25 MHz
   float    _crystalFreqFactor = 268435456.0 / 25000000.0;
 };
 

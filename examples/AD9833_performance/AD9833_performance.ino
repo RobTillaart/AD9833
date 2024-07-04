@@ -72,6 +72,20 @@ void setup()
   Serial.print("writeFrequencyRegisterMSB:\t");
   Serial.println(stop - start);
   delay(10);
+
+  start = micros();
+  AD.setFrequencyChannel(0);
+  stop = micros();
+  Serial.print("setFrequencyChannel(0):\t");
+  Serial.println(stop - start);
+  delay(10);
+
+  start = micros();
+  AD.setPhaseChannel(0);
+  stop = micros();
+  Serial.print("setPhaseChannel(0):\t");
+  Serial.println(stop - start);
+  delay(10);
 }
 
 
