@@ -223,13 +223,13 @@ float AD9833::getPhase(uint8_t channel)
 
 //       returns phase set (radians)
 //       [0 .. 2 PI>
-float AD9833::setPhaseRadians(float phase, uint8_t channel = 0)
+float AD9833::setPhaseRadians(float phase, uint8_t channel)
 {
   return setPhase(phase * RAD_TO_DEG, channel) * DEG_TO_RAD;
 }
 
 
-float AD9833::getPhaseRadians(uint8_t channel = 0)
+float AD9833::getPhaseRadians(uint8_t channel)
 {
   return getPhase(channel) * DEG_TO_RAD;
 }
