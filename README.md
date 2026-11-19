@@ -112,7 +112,7 @@ Note: the order of the parameters of the software SPI constructor has changed in
 
 - https://github.com/RobTillaart/AD985X
 - https://github.com/RobTillaart/functionGenerator  software waveform generator
-- https://pages.mtu.edu/~suits/notefreqs.html  frequency table for notes.
+- https://plastic.audio/note-frequencies/  frequency table for notes.
 
 STM32 specific library
 - https://github.com/gianni-carbone/STM32ad9833
@@ -317,7 +317,7 @@ if you only need to modify one of the two frequency registers.
 Only using the LSB register allows one to go from 0 .. 3050 Hz.
 In piano scales this covers C0 (16.35 Hz) to F#7 (2959.96 Hz).
 
-https://pages.mtu.edu/~suits/notefreqs.html
+https://plastic.audio/note-frequencies/
 
 
 ### SetCrystalFrequency()
